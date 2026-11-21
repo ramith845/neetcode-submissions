@@ -5,3 +5,5 @@
 *.out
 .vscode
 .clang-format
+# Local test drivers (not NeetCode submissions)
+main.cpp
