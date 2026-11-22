@@ -1,5 +1,8 @@
 // Local test driver. The build tasks #include the selected submission-N.cpp before this file,
 // so `Solution` is already in scope (std headers + ListNode/TreeNode come from .vscode/neetcode.h).
+#ifdef __INTELLISENSE__
+#include "submission-2.cpp"
+#endif
 int main() {
     Solution sol;
 
