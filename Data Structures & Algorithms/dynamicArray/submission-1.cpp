@@ -1,18 +1,44 @@
 #include <cassert>
+#include <stdexcept>
+#include <utility>
 class DynamicArray {
    public:
-    DynamicArray(int capacity) : m_capacity(capacity), m_size(0), m_arr(new int[capacity]) {
-        for (size_t i = 0; i < m_capacity; i++) m_arr[i] = 0;
+    explicit DynamicArray(int capacity) : m_arr(nullptr), m_size(0), m_capacity(capacity) {
+        if (capacity <= 0) throw std::invalid_argument("capacity must be greater than 0");
+        m_arr = new int[capacity];
     }
 
-    DynamicArray(DynamicArray& arr) = delete;
+    DynamicArray(const DynamicArray& arr) = delete;
     DynamicArray& operator=(const DynamicArray& arr) = delete;
+
+    DynamicArray(DynamicArray&& arr) noexcept
+        : m_arr(std::exchange(arr.m_arr, nullptr)),
+          m_size(std::exchange(arr.m_size, 0)),
+          m_capacity(std::exchange(arr.m_capacity, 0)) {}
+
+    DynamicArray& operator=(DynamicArray&& arr) noexcept {
+        if (this != &arr) {
+            delete[] m_arr;
+            m_arr = std::exchange(arr.m_arr, nullptr);
+            m_capacity = std::exchange(arr.m_capacity, 0);
+            m_size = std::exchange(arr.m_size, 0);
+        }
+        return *this;
+    }
 
     ~DynamicArray() { delete[] m_arr; }
 
-    int get(int i) { return m_arr[i]; }
+    int get(int i) const {
+        if (i < 0 || static_cast<size_t>(i) >= m_size)
+            throw std::out_of_range("index out of bounds");
+        return m_arr[i];
+    }
 
-    void set(int i, int n) { m_arr[i] = n; }
+    void set(int i, int n) {
+        if (i < 0 || static_cast<size_t>(i) >= m_size)
+            throw std::out_of_range("index out of bounds");
+        m_arr[i] = n;
+    }
 
     void pushback(int n) {
         if (m_size == m_capacity) {
@@ -27,14 +53,11 @@ class DynamicArray {
     }
 
     void resize() {
-        size_t new_cap = 2 * m_capacity;
+        size_t new_cap = m_capacity == 0 ? 1 : 2 * m_capacity;
         int* arr = new int[new_cap];
 
-        for (size_t i = 0; i < new_cap; i++) {
-            if (i < m_size)
-                arr[i] = m_arr[i];
-            else
-                arr[i] = 0;
+        for (size_t i = 0; i < m_size; i++) {
+            arr[i] = m_arr[i];
         }
 
         delete[] m_arr;
@@ -43,9 +66,9 @@ class DynamicArray {
         m_capacity = new_cap;
     }
 
-    int getSize() { return m_size; }
+    int getSize() const { return static_cast<int>(m_size); }
 
-    int getCapacity() { return m_capacity; }
+    int getCapacity() const { return static_cast<int>(m_capacity); }
 
    private:
     int* m_arr;
