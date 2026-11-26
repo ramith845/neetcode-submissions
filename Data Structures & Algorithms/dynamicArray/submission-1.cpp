@@ -1,8 +1,14 @@
+#include <cassert>
 class DynamicArray {
    public:
     DynamicArray(int capacity) : m_capacity(capacity), m_size(0), m_arr(new int[capacity]) {
         for (size_t i = 0; i < m_capacity; i++) m_arr[i] = 0;
     }
+
+    DynamicArray(DynamicArray& arr) = delete;
+    DynamicArray& operator=(const DynamicArray& arr) = delete;
+
+    ~DynamicArray() { delete[] m_arr; }
 
     int get(int i) { return m_arr[i]; }
 
@@ -16,7 +22,7 @@ class DynamicArray {
     }
 
     int popback() {
-        // if (m_size == 0) return nullptr;
+        assert(m_size > 0 && "Array is empty");
         return m_arr[--m_size];
     }
 
